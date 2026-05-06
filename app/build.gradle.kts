@@ -43,7 +43,6 @@ android {
     }
     buildFeatures {
         compose = true
-        dataBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -69,6 +68,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -76,6 +76,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // Compose with Lifecycle
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:31.2.0"))
@@ -94,9 +96,10 @@ dependencies {
     // Se requiere para KSP
     ksp("com.google.dagger:hilt-android-compiler:2.57.1")
 
-    //Glide
-    implementation("com.github.bumptech.glide:glide:4.14.2")
-    ksp("com.github.bumptech.glide:compiler:4.14.2")
+    //Compose with Glide
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+    //implementation("com.github.bumptech.glide:glide:4.14.2")
+    //ksp("com.github.bumptech.glide:compiler:4.14.2")
 
     // Retrofit library
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

@@ -1,10 +1,12 @@
-package com.adrianhelo.weatherapp.presentation.ui
+package com.adrianhelo.weatherapp.presentation.ui.MainActivity
 
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,8 +14,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,10 +39,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import com.adrianhelo.weather.R
 import com.adrianhelo.weatherapp.domain.FutureModel
 import com.adrianhelo.weatherapp.domain.HourlyModel
+import com.adrianhelo.weatherapp.domain.Weather
+import com.adrianhelo.weatherapp.presentation.util.WeatherIcon
+import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 // --- Sample Data ---
 val hourlyItems = listOf(
@@ -59,24 +70,44 @@ val dailyItems = listOf(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val mainViewModel: MainViewModel by viewModels()
+    private lateinit var weatherItem: Weather
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         // Set up edge-to-edge with no layout limits
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
-
         setContent {
-            WeatherScreen()
+            WeatherScreen(mainViewModel)
         }
+
+        val lat = intent.getDoubleExtra("LATITUDE", 0.0)
+        val lon = intent.getDoubleExtra("LONGITUDE", 0.0)
+        if (lat != 0.0 && lon != 0.0) {
+            // Usar la ubicación recibida
+            Log.i("MAIN_ACTIVITY", "Latitude is $lat")
+            Log.i("MAIN_ACTIVITY", "Longitude is $lon")
+            var units: String = "metric"
+            var lang: String = "en"
+
+            mainViewModel.viewModelScope.launch {
+                mainViewModel.getWeather(lat, lon, units, lang, getString(R.string.api_key))
+            }
+        }
+
     }
 }
 
 @Composable
-fun WeatherScreen() {
+fun WeatherScreen(viewModel: MainViewModel) {
+    // Observamos el flujo de datos. 'state' se actualizará automáticamente.
+    val weatherResponse by viewModel.weatherData.collectAsStateWithLifecycle()
+
     // Background Gradient Box
     Box(
         modifier = Modifier
@@ -95,7 +126,7 @@ fun WeatherScreen() {
             // 1. Current Weather Header
             item {
                 Text(
-                    text = "Mostly Cloudy",
+                    text = weatherResponse?.name ?: "Loading",
                     fontSize = 20.sp,
                     color = Color.White,
                     modifier = Modifier.padding(top = 48.dp)
@@ -104,17 +135,14 @@ fun WeatherScreen() {
 
             // 2. Main Weather Icon
             item {
-                Image(
-                    painter = painterResource(id = R.drawable.cloudy_sunny),
-                    contentDescription = null,
-                    modifier = Modifier.size(150.dp).padding(top = 8.dp)
-                )
+                val iconImage = weatherResponse?.weather?.firstOrNull()?.icon
+                WeatherIcon(iconImage)
             }
 
-            // 3. Date & Time
+            // 3. Weather Description
             item {
                 Text(
-                    text = "Mon June 17 | 10:00 AM",
+                    text = "Description: ${weatherResponse?.weather?.firstOrNull()?.description ?: "Loading"}",
                     fontSize = 19.sp,
                     color = Color.White
                 )
@@ -122,22 +150,46 @@ fun WeatherScreen() {
 
             // 4. Temperature
             item {
-                Text(
-                    text = "25°",
-                    fontSize = 63.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                Row (
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ){
+                    Text(
+                        text = "${weatherResponse?.main?.temp}°",
+                        fontSize = 63.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+
+                    Spacer(modifier = Modifier.width(5.dp))
+
+                    Text(
+                        text = "C",
+                        fontSize = 63.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
 
             // 5. High/Low Temp
             item {
-                Text(
-                    text = "H:27 L:18",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                Row {
+                    Text(
+                        text = "H: ${weatherResponse?.main?.tempMax}°",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(5.dp))
+
+                    Text(
+                        text = "L: ${weatherResponse?.main?.tempMin}°",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
             }
 
             // 6. Weather Details Box
@@ -156,9 +208,9 @@ fun WeatherScreen() {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        WeatherDetail(R.drawable.rain, "22%", "Rain")
-                        WeatherDetail(R.drawable.wind, "12km/h", "Wind Speed")
-                        WeatherDetail(R.drawable.humidity, "18%", "Humidity")
+                        WeatherDetail(R.drawable.rain, "22", "%","Rain")
+                        WeatherDetail(R.drawable.wind, "${weatherResponse?.wind?.speed}", "km/h","Wind Speed")
+                        WeatherDetail(R.drawable.humidity, "${weatherResponse?.main?.humidity}", "%", "Humidity")
                     }
                 }
             }
@@ -222,19 +274,30 @@ fun WeatherScreen() {
 // --- Helper Components ---
 
 @Composable
-fun WeatherDetail(icon: Int, value: String, label: String) {
+fun WeatherDetail(icon: Int, value: String, units: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Image(
             painter = painterResource(id = icon),
             contentDescription = null,
             modifier = Modifier.size(34.dp)
         )
-        Text(
-            text = value,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        Row (
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ){
+            Text(
+                text = value,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.width(2.dp))
+
+            Text(
+                text = units,
+                fontSize = 12.sp,
+                color = Color.White
+            )
+        }
         Text(
             text = label,
             fontSize = 12.sp,
