@@ -1,5 +1,7 @@
 package com.adrianhelo.weatherapp.presentation.ui.MainActivity
 
+import android.content.res.Resources.Theme
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -25,14 +27,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.DefaultScaleX
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,35 +64,26 @@ import com.adrianhelo.weather.R
 import com.adrianhelo.weatherapp.domain.FutureModel
 import com.adrianhelo.weatherapp.domain.HourlyModel
 import com.adrianhelo.weatherapp.domain.Weather
+import com.adrianhelo.weatherapp.presentation.theme.WeatherAppTheme
+import com.adrianhelo.weatherapp.presentation.ui.Screen.WeatherScreen
+import com.adrianhelo.weatherapp.presentation.util.FutureItem
+import com.adrianhelo.weatherapp.presentation.util.FutureModelViewHolder
+import com.adrianhelo.weatherapp.presentation.util.WeatherDetail
 import com.adrianhelo.weatherapp.presentation.util.WeatherIcon
+import com.adrianhelo.weatherapp.presentation.util.getDrawableResourceId
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-// --- Sample Data ---
-val hourlyItems = listOf(
-    HourlyModel("9 PM", 24, "cloudy"),
-    HourlyModel("10 PM", 23, "sunny"),
-    HourlyModel("11 PM", 22, "windy"),
-    HourlyModel("12 AM", 21, "cloudy_sunny"),
-    HourlyModel("1 AM", 20, "storm")
-)
-
-val dailyItems = listOf(
-    FutureModel("Tue", "storm", "Storm", 24, 12),
-    FutureModel("Wed", "cloudy", "Cloudy", 25, 16),
-    FutureModel("Thu", "sunny", "Sunny", 28, 19),
-    FutureModel("Fri", "rainy", "Rainy", 23, 15),
-    FutureModel("Sat", "windy", "Windy", 22, 13),
-    FutureModel("Sun", "cloudy_sunny", "Cloudy Sunny", 26, 16)
-)
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val mainViewModel: MainViewModel by viewModels()
-    private lateinit var weatherItem: Weather
+    private var units: String = ""
+    private var lang: String = ""
 
+    private val mainViewModel: MainViewModel by viewModels()
+
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -83,7 +93,57 @@ class MainActivity : ComponentActivity() {
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
         setContent {
-            WeatherScreen(mainViewModel)
+            WeatherAppTheme{
+                // 1. Estado para controlar el Drawer
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
+
+                // 2. El componente principal del Drawer
+                ModalNavigationDrawer(
+                    drawerState = drawerState,
+                    // Contenido del menú lateral
+                    drawerContent = {
+                        ModalDrawerSheet {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            NavigationDrawerItem(
+                                label = { Text("Settings") },
+                                selected = false,
+                                onClick = { scope.launch { drawerState.close() } }
+                            )
+                            NavigationDrawerItem(
+                                label = { Text("Hello") },
+                                selected = false,
+                                onClick = {scope.launch { drawerState.isClosed }}
+                            )
+                        }
+                    }
+                ) {
+                    // 3. Contenido principal de la App
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                title = { Text(getString(R.string.app_name)) },
+                                navigationIcon = {
+                                    IconButton(
+                                        onClick = {scope.launch { drawerState.open() }
+                                    }) {
+                                        Icon(painterResource(R.drawable.ic_menu), contentDescription = "Menu")
+                                    }
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = Color.Magenta,
+                                    titleContentColor = Color.White,
+                                )
+                            )
+                        }
+                    ) { padding ->
+                        // Usa 'padding' para que el contenido no se tape con la TopBar
+                        Box(modifier = Modifier.padding(padding)) {
+                            WeatherScreen(mainViewModel)
+                        }
+                    }
+                }
+            }
         }
 
         val lat = intent.getDoubleExtra("LATITUDE", 0.0)
@@ -92,294 +152,13 @@ class MainActivity : ComponentActivity() {
             // Usar la ubicación recibida
             Log.i("MAIN_ACTIVITY", "Latitude is $lat")
             Log.i("MAIN_ACTIVITY", "Longitude is $lon")
-            var units: String = "metric"
-            var lang: String = "en"
+            units = "metric"
+            lang = "en"
 
             mainViewModel.viewModelScope.launch {
                 mainViewModel.getWeather(lat, lon, units, lang, getString(R.string.api_key))
             }
         }
 
-    }
-}
-
-@Composable
-fun WeatherScreen(viewModel: MainViewModel) {
-    // Observamos el flujo de datos. 'state' se actualizará automáticamente.
-    val weatherResponse by viewModel.weatherData.collectAsStateWithLifecycle()
-
-    // Background Gradient Box
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF59469D), Color(0xFF643D67))
-                )
-            )
-    ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // 1. Current Weather Header
-            item {
-                Text(
-                    text = weatherResponse?.name ?: "Loading",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    modifier = Modifier.padding(top = 48.dp)
-                )
-            }
-
-            // 2. Main Weather Icon
-            item {
-                val iconImage = weatherResponse?.weather?.firstOrNull()?.icon
-                WeatherIcon(iconImage)
-            }
-
-            // 3. Weather Description
-            item {
-                Text(
-                    text = "Description: ${weatherResponse?.weather?.firstOrNull()?.description ?: "Loading"}",
-                    fontSize = 19.sp,
-                    color = Color.White
-                )
-            }
-
-            // 4. Temperature
-            item {
-                Row (
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ){
-                    Text(
-                        text = "${weatherResponse?.main?.temp}°",
-                        fontSize = 63.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-
-                    Spacer(modifier = Modifier.width(5.dp))
-
-                    Text(
-                        text = "C",
-                        fontSize = 63.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
-            // 5. High/Low Temp
-            item {
-                Row {
-                    Text(
-                        text = "H: ${weatherResponse?.main?.tempMax}°",
-                        fontSize = 16.sp,
-                        color = Color.White,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(5.dp))
-
-                    Text(
-                        text = "L: ${weatherResponse?.main?.tempMin}°",
-                        fontSize = 16.sp,
-                        color = Color.White,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-            }
-
-            // 6. Weather Details Box
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .background(
-                            color = colorResource(id = R.color.purple),
-                            shape = RoundedCornerShape(25.dp)
-                        )
-                        .padding(vertical = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        WeatherDetail(R.drawable.rain, "22", "%","Rain")
-                        WeatherDetail(R.drawable.wind, "${weatherResponse?.wind?.speed}", "km/h","Wind Speed")
-                        WeatherDetail(R.drawable.humidity, "${weatherResponse?.main?.humidity}", "%", "Humidity")
-                    }
-                }
-            }
-
-            // 7. Today Label
-            item {
-                Text(
-                    text = "Today",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 24.dp, top = 24.dp, bottom = 12.dp),
-                    textAlign = TextAlign.Start
-                )
-            }
-
-            // 8. Hourly Forecast Row
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(hourlyItems) { item ->
-                        FutureModelViewHolder(item)
-                    }
-                }
-            }
-
-            // 9. Future Label
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Future",
-                        fontSize = 20.sp,
-                        color = Color.White,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "Next 7 days >",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
-            // 10. Daily Forecast List
-            items(dailyItems) { item ->
-                FutureItem(item)
-            }
-        }
-    }
-}
-
-// --- Helper Components ---
-
-@Composable
-fun WeatherDetail(icon: Int, value: String, units: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Image(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            modifier = Modifier.size(34.dp)
-        )
-        Row (
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ){
-            Text(
-                text = value,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.width(2.dp))
-
-            Text(
-                text = units,
-                fontSize = 12.sp,
-                color = Color.White
-            )
-        }
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.White
-        )
-    }
-}
-
-@Composable
-fun FutureModelViewHolder(model: HourlyModel) {
-    Column(
-        modifier = Modifier
-            .background(
-                color = colorResource(id = R.color.purple),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = model.hour, color = Color.White)
-        Image(
-            painter = painterResource(id = getDrawableResourceId(model.picPath)),
-            contentDescription = null,
-            modifier = Modifier
-                .size(45.dp)
-                .padding(vertical = 8.dp)
-        )
-        Text(text = "${model.temp}°", color = Color.White, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-fun FutureItem(item: FutureModel) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = item.day,
-            color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier.width(50.dp)
-        )
-        Image(
-            painter = painterResource(id = getDrawableResourceId(item.picPath)),
-            contentDescription = null,
-            modifier = Modifier.size(45.dp)
-        )
-        Text(
-            text = item.status,
-            color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 16.dp)
-        )
-        Text(
-            text = "${item.highTemp}°",
-            color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text(
-            text = "${item.lowTemp}°",
-            color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier.alpha(0.7f) // Slight fade for low temp
-        )
-    }
-}
-
-@Composable
-fun getDrawableResourceId(picPath: String): Int {
-    return when (picPath) {
-        "storm" -> R.drawable.storm
-        "cloudy" -> R.drawable.cloudy
-        "sunny" -> R.drawable.sunny
-        "rainy" -> R.drawable.rainy
-        "windy" -> R.drawable.windy
-        "cloudy_sunny" -> R.drawable.cloudy_sunny
-        else -> R.drawable.sunny
     }
 }
