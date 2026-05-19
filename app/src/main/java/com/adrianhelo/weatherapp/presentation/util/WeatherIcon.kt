@@ -1,5 +1,6 @@
 package com.adrianhelo.weatherapp.presentation.util
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -15,11 +16,11 @@ import com.google.errorprone.annotations.Modifier
 @Composable
 fun WeatherIcon(iconCode: String?) {
     // Construimos la URL del icono (ejemplo: "04d" -> url de OpenWeather)
-    val iconUrl = "https://openweathermap.org/img/wn/$iconCode@2x.png"
+    val iconUrl = "https://openweathermap.org/img/wn/$iconCode@4x.png"
 
     GlideImage(
         model = iconUrl,
         contentDescription = null,
-        modifier = androidx.compose.ui.Modifier.size(150.dp).padding(top = 8.dp)
+        modifier = androidx.compose.ui.Modifier.size(150.dp)
     )
 }
