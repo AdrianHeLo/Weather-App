@@ -37,6 +37,7 @@ import androidx.lifecycle.viewModelScope
 import com.adrianhelo.weather.R
 import com.adrianhelo.weatherapp.presentation.theme.WeatherAppTheme
 import com.adrianhelo.weatherapp.presentation.ui.Screen.WeatherScreen
+import com.adrianhelo.weatherapp.presentation.util.UnitsToggle.UnitSelector
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -89,11 +90,18 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                             fontSize = 16.sp
                                         )
+
                                         Spacer(modifier = Modifier.padding(10.dp))
+
+                                        // Aquí invocamos nuestro componente personalizado
+                                        UnitSelector(
+                                            selectedUnit = mainViewModel.unitSelection,
+                                            onUnitClick = { mainViewModel.toggleUnits() }
+                                        )
                                     }
                                 },
                                 selected = false,
-                                onClick = {scope.launch { drawerState.isClosed }}
+                                onClick = {}
                             )
                         }
                     }

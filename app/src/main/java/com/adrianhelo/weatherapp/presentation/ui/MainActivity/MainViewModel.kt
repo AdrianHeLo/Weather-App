@@ -1,8 +1,9 @@
 package com.adrianhelo.weatherapp.presentation.ui.MainActivity
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adrianhelo.weatherapp.data.Repository
@@ -20,6 +21,15 @@ class MainViewModel @Inject constructor(private val repository: Repository): Vie
     // Definimos un estado privado y uno público para proteger la mutabilidad
     private val _weatherData = MutableStateFlow<WeatherResponse?>(null)
     val weatherData: StateFlow<WeatherResponse?> = _weatherData
+
+    // "metric" por defecto
+    var unitSelection by mutableStateOf("metric")
+        private set
+
+    fun toggleUnits() {
+        unitSelection = if (unitSelection == "metric") "imperial" else "metric"
+        //fetchWeather() // Volvemos a llamar a la API con la nueva unidad
+    }
 
     suspend fun getWeather(lat: Double, lon: Double, units: String, lang: String, apiKey: String){
         Log.d("API_DEBUG", "Enviando a Repo -> Key: '$apiKey'")
