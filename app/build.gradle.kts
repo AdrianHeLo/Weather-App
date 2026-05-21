@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.preference.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,6 +80,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     // Compose with Lifecycle
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.datastore.preferences)
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:31.2.0"))
