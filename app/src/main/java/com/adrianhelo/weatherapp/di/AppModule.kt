@@ -1,9 +1,13 @@
 package com.adrianhelo.weatherapp.di
 
+import android.annotation.SuppressLint
+import android.content.Context
 import com.adrianhelo.weatherapp.data.ApiService
+import com.adrianhelo.weatherapp.data.UnitsPreferenceImp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -26,6 +30,13 @@ object AppModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService{
         return retrofit.create(ApiService::class.java)
+    }
+
+    @SuppressLint("RestrictedApi")
+    @Provides
+    @Singleton
+    fun providePreferenceManager(@ApplicationContext context: Context): UnitsPreferenceImp {
+        return UnitsPreferenceImp(context)
     }
 
 }

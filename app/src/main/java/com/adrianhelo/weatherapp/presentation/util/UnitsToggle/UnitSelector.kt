@@ -11,12 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asLiveData
+import com.adrianhelo.weatherapp.data.UnitsPreferenceImp
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun UnitSelector(
     selectedUnit: String,
     onUnitClick: () -> Unit
 ) {
+    // Verificación explícita
     val isMetric = selectedUnit == "metric"
 
     Row(
