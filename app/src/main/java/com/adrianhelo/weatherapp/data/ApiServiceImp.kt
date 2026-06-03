@@ -1,7 +1,11 @@
 package com.adrianhelo.weatherapp.data
 
-import javax.inject.Inject
+import com.adrianhelo.weatherapp.domain.WeatherResponse
+import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Query
 
-class ApiServiceImp @Inject constructor(private val apiService: ApiService) {
-    suspend fun getWeather(lat: Double, lon: Double, units: String, lang: String, apiKey: String) = apiService.getFetchWeather(lat, lon, units, lang, apiKey)
+interface ApiServiceImp {
+    @GET("weather")
+    suspend fun getFetchWeather(@Query("lat") lat: Double, @Query("lon") lon: Double, @Query("units") units: String, @Query("lang") lang: String, @Query("apiKey") apiKey: String): Response<WeatherResponse>
 }
