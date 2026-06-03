@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.adrianhelo.weather.R
 import com.adrianhelo.weatherapp.presentation.theme.WeatherAppTheme
 import com.adrianhelo.weatherapp.presentation.ui.Screen.WeatherContent
+import com.adrianhelo.weatherapp.presentation.util.LanguageToggle.LanguageSelector
 import com.adrianhelo.weatherapp.presentation.util.UnitsToggle.UnitSelector
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             // 2. Recolectamos el estado de las unidades desde DataStore
             val selectedUnit by mainViewModel.unitsState.collectAsStateWithLifecycle()
+            val selectedLanguage by mainViewModel.languageState.collectAsStateWithLifecycle()
 
             WeatherAppTheme{
                 // 1. Estado para controlar el Drawer
@@ -90,7 +92,7 @@ class MainActivity : ComponentActivity() {
                                 label = {
                                     Row (horizontalArrangement = Arrangement.Center){
                                         Text(
-                                            text = "Metric",
+                                            text = "Units",
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                             fontSize = 16.sp
                                         )
@@ -103,14 +105,30 @@ class MainActivity : ComponentActivity() {
                                             selectedUnit = selectedUnit,
                                             onUnitClick = { mainViewModel.toggleUnits() }
                                         )
-
-                                        Spacer(modifier = Modifier.padding(10.dp))
-
+                                    }
+                                },
+                                selected = false,
+                                onClick = {}
+                            )
+                            NavigationDrawerItem(
+                                label = {
+                                    Row (horizontalArrangement = Arrangement.Center){
                                         Text(
-                                            text = "Imperial",
+                                            text = "Language",
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                             fontSize = 16.sp
                                         )
+
+                                        Spacer(modifier = Modifier.padding(10.dp))
+
+                                        // Aquí invocamos nuestro componente personalizado
+                                        LanguageSelector(
+                                            // Pasamos 'lang' (el valor actual) y la función toggle
+                                            selectedLanguage = selectedLanguage,
+                                            onUnitClick = { mainViewModel.toggleLanguage() }
+                                        )
+
+                                        Spacer(modifier = Modifier.padding(10.dp))
                                     }
                                 },
                                 selected = false,
