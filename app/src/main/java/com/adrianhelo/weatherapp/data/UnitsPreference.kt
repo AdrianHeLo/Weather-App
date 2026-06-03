@@ -12,7 +12,7 @@ import javax.inject.Singleton
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
 @Singleton
-class UnitsPreferenceImp @Inject constructor(private val context: Context){
+class UnitsPreference @Inject constructor(private val context: Context){
 
     private val UNITS_KEY = stringPreferencesKey("units_preference")
 

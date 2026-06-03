@@ -2,8 +2,8 @@ package com.adrianhelo.weatherapp.di
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.adrianhelo.weatherapp.data.ApiService
-import com.adrianhelo.weatherapp.data.UnitsPreferenceImp
+import com.adrianhelo.weatherapp.data.ApiServiceImp
+import com.adrianhelo.weatherapp.data.UnitsPreference
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,15 +28,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService{
-        return retrofit.create(ApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): ApiServiceImp{
+        return retrofit.create(ApiServiceImp::class.java)
     }
 
     @SuppressLint("RestrictedApi")
     @Provides
     @Singleton
-    fun providePreferenceManager(@ApplicationContext context: Context): UnitsPreferenceImp {
-        return UnitsPreferenceImp(context)
+    fun providePreferenceManager(@ApplicationContext context: Context): UnitsPreference {
+        return UnitsPreference(context)
     }
 
 }

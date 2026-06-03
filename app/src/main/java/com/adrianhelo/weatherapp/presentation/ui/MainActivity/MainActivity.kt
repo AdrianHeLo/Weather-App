@@ -1,7 +1,6 @@
 package com.adrianhelo.weatherapp.presentation.ui.MainActivity
 
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,8 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -37,18 +34,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import com.adrianhelo.weather.R
 import com.adrianhelo.weatherapp.presentation.theme.WeatherAppTheme
-import com.adrianhelo.weatherapp.presentation.ui.Screen.WeatherScreen
+import com.adrianhelo.weatherapp.presentation.ui.Screen.WeatherContent
 import com.adrianhelo.weatherapp.presentation.util.UnitsToggle.UnitSelector
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private var lang: String = "en"
 
     private val mainViewModel: MainViewModel by viewModels()
 
@@ -61,31 +55,14 @@ class MainActivity : ComponentActivity() {
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
-        setContent {
-            // 1. Obtenemos la ubicación del usuario
-            val lat = intent.getDoubleExtra("LATITUDE", 0.0)
-            val lon = intent.getDoubleExtra("LONGITUDE", 0.0)
+        // 1. Obtenemos la ubicación del usuario
+        val lat = intent.getDoubleExtra("LATITUDE", 0.0)
+        val lon = intent.getDoubleExtra("LONGITUDE", 0.0)
+        mainViewModel.setCoordinates(lat, lon)
 
+        setContent {
             // 2. Recolectamos el estado de las unidades desde DataStore
             val selectedUnit by mainViewModel.unitsState.collectAsStateWithLifecycle()
-
-            if (lat != 0.0 && lon != 0.0) {
-                // Usar la ubicación recibida
-                Log.i("MAIN_ACTIVITY", "Latitude is $lat")
-                Log.i("MAIN_ACTIVITY", "Longitude is $lon")
-
-                // 3. Cada vez que 'units' cambie, se dispara la API automáticamente
-                LaunchedEffect(selectedUnit) {
-                    // Reemplaza con tus coordenadas reales
-                    mainViewModel.getWeather(
-                        lat = lat,
-                        lon = lon,
-                        units = selectedUnit, // Usamos el valor actualizado
-                        lang = lang,
-                        apiKey = getString(R.string.api_key)
-                    )
-                }
-            }
 
             WeatherAppTheme{
                 // 1. Estado para controlar el Drawer
@@ -105,8 +82,7 @@ class MainActivity : ComponentActivity() {
                                         painterResource(R.drawable.ic_back),
                                         contentDescription = null,
                                         modifier = Modifier.size(40.dp).rotate(180f)
-                                    )
-                                        },
+                                    )},
                                 selected = false,
                                 onClick = { scope.launch { drawerState.close() } }
                             )
@@ -114,7 +90,7 @@ class MainActivity : ComponentActivity() {
                                 label = {
                                     Row (horizontalArrangement = Arrangement.Center){
                                         Text(
-                                            text = "Units",
+                                            text = "Metric",
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                             fontSize = 16.sp
                                         )
@@ -126,6 +102,14 @@ class MainActivity : ComponentActivity() {
                                             // Pasamos 'units' (el valor actual) y la función toggle
                                             selectedUnit = selectedUnit,
                                             onUnitClick = { mainViewModel.toggleUnits() }
+                                        )
+
+                                        Spacer(modifier = Modifier.padding(10.dp))
+
+                                        Text(
+                                            text = "Imperial",
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                            fontSize = 16.sp
                                         )
                                     }
                                 },
@@ -156,7 +140,7 @@ class MainActivity : ComponentActivity() {
                     ) { padding ->
                         // Usa 'padding' para que el contenido no se tape con la TopBar
                         Box(modifier = Modifier.padding(padding)) {
-                            WeatherScreen(mainViewModel)
+                            WeatherContent(mainViewModel)
                         }
                     }
                 }

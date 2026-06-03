@@ -55,7 +55,7 @@ val dailyItems = listOf(
 )
 
 @Composable
-fun WeatherScreen(viewModel: MainViewModel) {
+fun WeatherContent(viewModel: MainViewModel) {
     // Observamos el flujo de datos. 'state' se actualizará automáticamente.
     val weatherResponse by viewModel.weatherData.collectAsStateWithLifecycle()
 
