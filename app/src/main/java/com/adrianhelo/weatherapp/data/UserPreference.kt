@@ -12,19 +12,30 @@ import javax.inject.Singleton
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
 @Singleton
-class UnitsPreference @Inject constructor(private val context: Context){
+class UserPreference @Inject constructor(private val context: Context){
 
     private val UNITS_KEY = stringPreferencesKey("units_preference")
+    private val LANGUAGE_KEY = stringPreferencesKey("language_preference")
 
-    // Leer las unidades (por defecto "metric")
-    val unitsFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[UNITS_KEY] ?: "metric"
+    // Leer las unidades (por defecto "metric") y lenguahe (por defecto "en")
+    val settingsFlow: Flow<Pair<String, String>> = context.dataStore.data.map { preferences ->
+        Pair(
+            preferences[UNITS_KEY] ?: "metric",
+            preferences[LANGUAGE_KEY] ?: "en"
+        )
     }
 
     // Guardar las unidades
     suspend fun saveUnits(units: String) {
         context.dataStore.edit { preferences ->
             preferences[UNITS_KEY] = units
+        }
+    }
+
+    // Guardar el lenguaje
+    suspend fun saveLanguage(language: String) {
+        context.dataStore.edit { preferences ->
+            preferences[LANGUAGE_KEY] = language
         }
     }
 }

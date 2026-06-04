@@ -63,8 +63,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             // 2. Recolectamos el estado de las unidades desde DataStore
-            val selectedUnit by mainViewModel.unitsState.collectAsStateWithLifecycle()
-            val selectedLanguage by mainViewModel.languageState.collectAsStateWithLifecycle()
+            val selectedUnit by mainViewModel.userSettingsState.collectAsStateWithLifecycle()
 
             WeatherAppTheme{
                 // 1. Estado para controlar el Drawer
@@ -100,11 +99,13 @@ class MainActivity : ComponentActivity() {
                                         Spacer(modifier = Modifier.padding(10.dp))
 
                                         // Aquí invocamos nuestro componente personalizado
-                                        UnitSelector(
-                                            // Pasamos 'units' (el valor actual) y la función toggle
-                                            selectedUnit = selectedUnit,
-                                            onUnitClick = { mainViewModel.toggleUnits() }
-                                        )
+                                        selectedUnit?.let {
+                                            UnitSelector(
+                                                // Pasamos 'units' (el valor actual) y la función toggle
+                                                selectedUnit = it.units,
+                                                onUnitClick = { mainViewModel.toggleUnits() }
+                                            )
+                                        }
                                     }
                                 },
                                 selected = false,
@@ -122,11 +123,13 @@ class MainActivity : ComponentActivity() {
                                         Spacer(modifier = Modifier.padding(10.dp))
 
                                         // Aquí invocamos nuestro componente personalizado
-                                        LanguageSelector(
-                                            // Pasamos 'lang' (el valor actual) y la función toggle
-                                            selectedLanguage = selectedLanguage,
-                                            onUnitClick = { mainViewModel.toggleLanguage() }
-                                        )
+                                        selectedUnit?.let {
+                                            LanguageSelector(
+                                                // Pasamos 'lang' (el valor actual) y la función toggle
+                                                selectedLanguage = it.lang,
+                                                onUnitClick = { mainViewModel.toggleLanguage() }
+                                            )
+                                        }
 
                                         Spacer(modifier = Modifier.padding(10.dp))
                                     }
