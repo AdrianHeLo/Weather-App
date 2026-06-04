@@ -3,8 +3,7 @@ package com.adrianhelo.weatherapp.di
 import android.annotation.SuppressLint
 import android.content.Context
 import com.adrianhelo.weatherapp.data.ApiServiceImp
-import com.adrianhelo.weatherapp.data.LanguagePreference
-import com.adrianhelo.weatherapp.data.UnitsPreference
+import com.adrianhelo.weatherapp.data.UserPreference
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,14 +35,8 @@ object AppModule {
     @SuppressLint("RestrictedApi")
     @Provides
     @Singleton
-    fun providePreferenceManager(@ApplicationContext context: Context): UnitsPreference {
-        return UnitsPreference(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideLanguagePreference(@ApplicationContext context: Context): LanguagePreference{
-        return LanguagePreference(context)
+    fun provideUserPreference(@ApplicationContext context: Context): UserPreference {
+        return UserPreference(context)
     }
 
 }
