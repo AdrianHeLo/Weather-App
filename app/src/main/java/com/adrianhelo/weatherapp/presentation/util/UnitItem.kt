@@ -1,4 +1,4 @@
-package com.adrianhelo.weatherapp.presentation.util.UnitsToggle
+package com.adrianhelo.weatherapp.presentation.util
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.adrianhelo.weather.R
-import com.adrianhelo.weatherapp.domain.FutureModel
-import com.adrianhelo.weatherapp.domain.HourlyModel
+import com.adrianhelo.weatherapp.domain.models.FutureModel
+import com.adrianhelo.weatherapp.domain.models.HourlyModel
 import com.adrianhelo.weatherapp.presentation.ui.MainActivity.MainViewModel
 import com.adrianhelo.weatherapp.presentation.util.FutureItem
 import com.adrianhelo.weatherapp.presentation.util.FutureModelViewHolder
@@ -58,6 +58,7 @@ val dailyItems = listOf(
 fun WeatherContent(viewModel: MainViewModel) {
     // Observamos el flujo de datos. 'state' se actualizará automáticamente.
     val weatherResponse by viewModel.weatherData.collectAsStateWithLifecycle()
+    val unitType by viewModel.unitFactor.collectAsStateWithLifecycle()
 
     // Background Gradient Box
     Box(
@@ -105,7 +106,7 @@ fun WeatherContent(viewModel: MainViewModel) {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ){
                     Text(
-                        text = "${weatherResponse?.main?.temp}°",
+                        text = "${weatherResponse?.main?.temp}",
                         fontSize = 63.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -114,7 +115,7 @@ fun WeatherContent(viewModel: MainViewModel) {
                     Spacer(modifier = Modifier.width(5.dp))
 
                     Text(
-                        text = "C",
+                        text = unitType.temperatureSymbol,
                         fontSize = 63.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

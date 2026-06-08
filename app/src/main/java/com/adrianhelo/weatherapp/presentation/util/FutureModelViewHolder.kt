@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.adrianhelo.weather.R
-import com.adrianhelo.weatherapp.domain.HourlyModel
+import com.adrianhelo.weatherapp.domain.models.HourlyModel
 
 @Composable
 fun FutureModelViewHolder(model: HourlyModel) {

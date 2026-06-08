@@ -1,4 +1,4 @@
-package com.adrianhelo.weatherapp.domain
+package com.adrianhelo.weatherapp.domain.models
 
 data class Weather(
     val id: Int,
