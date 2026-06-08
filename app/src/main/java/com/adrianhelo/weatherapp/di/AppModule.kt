@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.adrianhelo.weatherapp.data.ApiServiceFactory
 import com.adrianhelo.weatherapp.data.UserPreference
+import com.adrianhelo.weatherapp.domain.UnitProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -5,8 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adrianhelo.weatherapp.data.UserPreference
 import com.adrianhelo.weatherapp.data.ApiService
-import com.adrianhelo.weatherapp.domain.UserSettings
-import com.adrianhelo.weatherapp.domain.WeatherResponse
+import com.adrianhelo.weatherapp.data.repository.MetricUnitFactory
+import com.adrianhelo.weatherapp.domain.UnitProvider
+import com.adrianhelo.weatherapp.domain.models.UserSettings
+import com.adrianhelo.weatherapp.domain.models.WeatherResponse
+import com.adrianhelo.weatherapp.domain.repository.UnitFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +22,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val preferenceManager: UserPreference, private val apiService: ApiService): ViewModel() {
+class MainViewModel @Inject constructor(private val preferenceManager: UserPreference, private val unitProvider: UnitProvider, private val apiService: ApiService): ViewModel() {
 
     // Definimos un estado privado y uno público para proteger la mutabilidad
     private val _weatherData = MutableStateFlow<WeatherResponse?>(null)
@@ -45,6 +48,12 @@ class MainViewModel @Inject constructor(private val preferenceManager: UserPrefe
         initialValue = null
     )
 
+    val unitFactor: StateFlow<UnitFactory> = unitProvider.currentUnityFactory.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MetricUnitFactory()
+    )
+
     fun toggleUnits() {
         viewModelScope.launch {
             val current = userSettingsState.value?.units ?: "metric"
@@ -61,7 +70,7 @@ class MainViewModel @Inject constructor(private val preferenceManager: UserPrefe
         }
     }
 
-    // Lógica centralizada: Observa cambios en coordenadas Y unidades
+    // Lógica centralizada: Observa cambios en coordenadas y unidades
     init {
         viewModelScope.launch {
             userSettingsState.collect { settings ->

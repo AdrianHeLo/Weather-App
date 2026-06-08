@@ -1,4 +1,4 @@
-package com.adrianhelo.weatherapp.domain
+package com.adrianhelo.weatherapp.domain.models
 
 data class UserSettings(
     val lat: Double = 0.0,

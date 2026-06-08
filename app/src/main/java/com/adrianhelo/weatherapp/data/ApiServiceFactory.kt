@@ -1,6 +1,6 @@
 package com.adrianhelo.weatherapp.data
 
-import com.adrianhelo.weatherapp.domain.WeatherResponse
+import com.adrianhelo.weatherapp.domain.models.WeatherResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

@@ -14,10 +14,10 @@ private val Context.dataStore by preferencesDataStore(name = "settings")
 @Singleton
 class UserPreference @Inject constructor(private val context: Context){
 
-    private val UNITS_KEY = stringPreferencesKey("units_preference")
+    val UNITS_KEY = stringPreferencesKey("units_preference")
     private val LANGUAGE_KEY = stringPreferencesKey("language_preference")
 
-    // Leer las unidades (por defecto "metric") y lenguahe (por defecto "en")
+    // Leer las unidades (por defecto "metric") y lenguaje (por defecto "en")
     val settingsFlow: Flow<Pair<String, String>> = context.dataStore.data.map { preferences ->
         Pair(
             preferences[UNITS_KEY] ?: "metric",

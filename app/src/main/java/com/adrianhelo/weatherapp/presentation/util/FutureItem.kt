@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.adrianhelo.weatherapp.domain.FutureModel
+import com.adrianhelo.weatherapp.domain.models.FutureModel
 
 @Composable
 fun FutureItem(item: FutureModel) {

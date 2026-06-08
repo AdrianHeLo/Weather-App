@@ -1,4 +1,4 @@
-package com.adrianhelo.weatherapp.domain
+package com.adrianhelo.weatherapp.domain.models
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
