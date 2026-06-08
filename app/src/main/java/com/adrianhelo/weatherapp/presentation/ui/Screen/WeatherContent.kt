@@ -161,7 +161,7 @@ fun WeatherContent(viewModel: MainViewModel) {
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         WeatherDetail(R.drawable.rain, "22", "%","Rain")
-                        WeatherDetail(R.drawable.wind, "${weatherResponse?.wind?.speed}", "km/h","Wind Speed")
+                        WeatherDetail(R.drawable.wind, "${weatherResponse?.wind?.speed}", unitType.windSpeedSymbol,"Wind Speed")
                         WeatherDetail(R.drawable.humidity, "${weatherResponse?.main?.humidity}", "%", "Humidity")
                     }
                 }

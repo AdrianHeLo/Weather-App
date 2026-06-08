@@ -10,8 +10,10 @@ import javax.inject.Inject
 
 class UnitProvider @Inject constructor(private val userPreference: UserPreference) {
     val currentUnityFactory: Flow<UnitFactory> = userPreference.settingsFlow.map { settings ->
-        val unitSetting = settings.first
-        when(unitSetting){
+
+        val temperatureSymbol =  settings.first
+
+        when(temperatureSymbol){
             "metric" -> MetricUnitFactory()
             "imperial" -> ImperialUnitFactory()
             else -> MetricUnitFactory()
