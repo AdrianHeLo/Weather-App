@@ -10,6 +10,7 @@ import com.adrianhelo.weatherapp.domain.UnitProvider
 import com.adrianhelo.weatherapp.domain.models.UserSettings
 import com.adrianhelo.weatherapp.domain.models.WeatherResponse
 import com.adrianhelo.weatherapp.domain.repository.UnitFactory
+import com.adrianhelo.weatherapp.domain.use_case.WeatherIconUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val preferenceManager: UserPreference, private val unitProvider: UnitProvider, private val apiService: ApiService): ViewModel() {
+class MainViewModel @Inject constructor(
+    private val preferenceManager: UserPreference,
+    private val unitProvider: UnitProvider,
+    private val weatherIconUseCase: WeatherIconUseCase,
+    private val apiService: ApiService): ViewModel() {
 
     // Definimos un estado privado y uno público para proteger la mutabilidad
     private val _weatherData = MutableStateFlow<WeatherResponse?>(null)
@@ -79,6 +84,18 @@ class MainViewModel @Inject constructor(private val preferenceManager: UserPrefe
                 }
             }
         }
+    }
+
+    fun getWeatherIcon(iconId: String?): Int{
+        var weatherIcon = 0
+        viewModelScope.launch {
+            try {
+                weatherIcon = weatherIconUseCase(iconId)
+            }catch(e:Exception){
+                e.message
+            }
+        }
+        return weatherIcon
     }
 
     private fun getWeather(userSettings: UserSettings){
