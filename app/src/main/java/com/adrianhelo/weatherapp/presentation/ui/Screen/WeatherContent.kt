@@ -1,5 +1,6 @@
 package com.adrianhelo.weatherapp.presentation.ui.Screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,7 +37,6 @@ import com.adrianhelo.weatherapp.presentation.ui.MainActivity.MainViewModel
 import com.adrianhelo.weatherapp.presentation.util.FutureItem
 import com.adrianhelo.weatherapp.presentation.util.FutureModelViewHolder
 import com.adrianhelo.weatherapp.presentation.util.WeatherDetail
-import com.adrianhelo.weatherapp.presentation.util.WeatherIcon
 
 // --- Sample Data ---
 val hourlyItems = listOf(
@@ -87,8 +89,13 @@ fun WeatherContent(viewModel: MainViewModel) {
 
             // 2. Main Weather Icon
             item {
-                val iconImage = weatherResponse?.weather?.firstOrNull()?.icon
-                WeatherIcon(iconImage)
+                val iconId = weatherResponse?.weather?.firstOrNull()?.icon
+                val iconImage = viewModel.getWeatherIcon(iconId)
+                Image(
+                    painterResource(iconImage),
+                    contentDescription = null,
+                    modifier = Modifier.size(150.dp)
+                    )
             }
 
             // 3. Weather Description

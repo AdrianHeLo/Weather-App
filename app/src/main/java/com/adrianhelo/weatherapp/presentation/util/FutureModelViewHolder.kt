@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.adrianhelo.weather.R
 import com.adrianhelo.weatherapp.domain.models.HourlyModel
+import com.adrianhelo.weatherapp.presentation.util.WeatherIcons.getDrawableResourceId
 
 @Composable
 fun FutureModelViewHolder(model: HourlyModel) {
