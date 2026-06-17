@@ -37,6 +37,7 @@ import com.adrianhelo.weatherapp.presentation.ui.MainActivity.MainViewModel
 import com.adrianhelo.weatherapp.presentation.util.FutureItem
 import com.adrianhelo.weatherapp.presentation.util.FutureModelViewHolder
 import com.adrianhelo.weatherapp.presentation.util.WeatherDetail
+import com.adrianhelo.weatherapp.presentation.util.setCapitalizedText
 
 // --- Sample Data ---
 val hourlyItems = listOf(
@@ -100,8 +101,10 @@ fun WeatherContent(viewModel: MainViewModel) {
 
             // 3. Weather Description
             item {
+                val textContent = weatherResponse?.weather?.firstOrNull()?.description
+                val capitalizedText = setCapitalizedText(textContent)
                 Text(
-                    text = "Description: ${weatherResponse?.weather?.firstOrNull()?.description ?: "Loading"}",
+                    text = "Description: $capitalizedText",
                     fontSize = 19.sp,
                     color = Color.White
                 )
